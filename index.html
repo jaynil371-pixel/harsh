@@ -466,23 +466,53 @@
     }
   });
 
-  // ── Column transition sounds ──
-  // Drop 4 files at these paths (or edit the paths below to match your own filenames).
-  // One sound per column: Column 1 -> index 0, Column 2 -> index 1, etc.
+  // =========================
+  // COLUMN TRANSITION SOUNDS
+  // =========================
+
+  // Audio files from the GitHub repository root
   const sounds = [
-    new Audio("1-imp.mp3"),
-    new Audio("vine-boom.mp3"),
-    new Audio("3-imp.mp3"),
-    new Audio("4-imp.mp3")
+    new Audio("./1-imp.mp3"),
+    new Audio("./vine-boom.mp3"),
+    new Audio("./3-imp.mp3"),
+    new Audio("./4-imp.mp3")
   ];
 
+  // Preload audio
+  sounds.forEach(sound => {
+    sound.preload = "auto";
+    sound.load();
+  });
+
+  // Unlock audio after first user interaction
+  function unlockAudio() {
+    sounds.forEach(sound => {
+      sound.play()
+        .then(() => {
+          sound.pause();
+          sound.currentTime = 0;
+        })
+        .catch(() => {});
+    });
+
+    document.removeEventListener("click", unlockAudio);
+    document.removeEventListener("touchstart", unlockAudio);
+  }
+
+  document.addEventListener("click", unlockAudio);
+  document.addEventListener("touchstart", unlockAudio);
+
   function playSound(index) {
-    const s = sounds[index];
-    if (!s) return;
-    s.pause();
-    s.currentTime = 0;
-    s.volume = 0.7;
-    s.play().catch(() => {}); // ignore autoplay-block errors before first user interaction
+    const sound = sounds[index];
+    if (!sound) return;
+
+    sound.pause();
+    sound.currentTime = 0;
+    sound.volume = 1.0;
+
+    sound.play().catch(err => {
+      console.error("Audio Error:", err);
+    });
   }
 
   // ── Column hover interaction ──
