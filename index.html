@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parallax Hero + Interactive Columns</title>
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<style>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── HERO SECTION ── */
+  .hero {
+    position: fixed;
+    inset: 0;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    will-change: transform, opacity;
+    z-index: 0;
+  }
+
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .hero__bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.4) 100%);
+    z-index: 1;
+  }
+
+  .hero__title {
+    position: relative;
+    z-index: 2;
+    font-size: clamp(2.5rem, 8vw, 6rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    text-shadow: 0 4px 40px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 1s ease 0.3s forwards;
+  }
+
+  .hero__subtitle {
+    position: relative;
+    z-index: 2;
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    margin-top: 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 1s ease 0.6s forwards;
+  }
+
+  .hero__scroll {
+    position: absolute;
+    bottom: 2.5rem;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.9s forwards;
+  }
+
+  .hero__scroll span {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .hero__scroll svg {
+    animation: bounce 2s ease infinite;
+    color: rgba(255,255,255,0.6);
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* ── MAIN CONTENT SPACER ── */
+  .content-spacer {
+    position: relative;
+    z-index: 1;
+    margin-top: 100vh;
+  }
+
+  /* ── TRANSITION BLOCK ── */
+  .section-bridge {
+    background: linear-gradient(to bottom, transparent, #000 30%);
+    padding: 8rem 2rem 4rem;
+    text-align: center;
+  }
+
+  .section-bridge__label {
+    display: inline-block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 0.4rem 1.2rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-bridge__heading {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.15;
+  }
+
+  .section-bridge__text {
+    color: rgba(255,255,255,0.5);
+    font-size: 1.05rem;
+    max-width: 480px;
+    margin: 1rem auto 0;
+    line-height: 1.6;
+  }
+
+  /* ── COLUMNS SECTION ── */
+  .columns {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+  }
+
+  .col {
+    position: relative;
+    flex: 1;
+    cursor: pointer;
+    overflow: hidden;
+    transition: flex 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .col:hover,
+  .col.active {
+    flex: 3;
+  }
+
+  .col + .col {
+    border-left: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ── Background image layer (HTML img) ── */
+  .col__bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: scale(1.08);
+    transition:
+      opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+  }
+
+  .col__bg img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .col:hover .col__bg,
+  .col.active .col__bg {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Dark overlay */
+  .col__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.1) 0%,
+      rgba(0,0,0,0.6) 100%
+    );
+    z-index: 1;
+  }
+
+  /* Number label */
+  .col__number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(6rem, 12vw, 12rem);
+    font-weight: 900;
+    color: rgba(255,255,255,0.06);
+    z-index: 2;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    line-height: 1;
+  }
+
+  .col:hover .col__number,
+  .col.active .col__number {
+    opacity: 0;
+  }
+
+  /* Info card */
+  .col__info {
+    position: absolute;
+    bottom: 3rem;
+    left: 2rem;
+    right: 2rem;
+    z-index: 3;
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+      opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s,
+      transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+  }
+
+  .col:hover .col__info,
+  .col.active .col__info {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .col__tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(12px);
+    padding: 0.35rem 0.9rem;
+    border-radius: 100px;
+    margin-bottom: 0.85rem;
+    color: rgba(255,255,255,0.9);
+  }
+
+  .col__title {
+    font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 0.6rem;
+  }
+
+  .col__desc {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.55;
+    max-width: 320px;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    position: relative;
+    z-index: 1;
+    background: #000;
+    text-align: center;
+    padding: 4rem 2rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .footer p {
+    color: rgba(255,255,255,0.25);
+    font-size: 0.85rem;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .columns {
+      flex-direction: column;
+      height: auto;
+      min-height: 100vh;
+    }
+
+    .col {
+      flex: 1;
+      min-height: 25vh;
+      transition: flex 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .col:hover,
+    .col.active {
+      flex: 4;
+    }
+
+    .col + .col {
+      border-left: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .col__info {
+      bottom: 1.5rem;
+      left: 1.5rem;
+      right: 1.5rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── PARALLAX HERO ── -->
+<section class="hero" id="hero">
+  <div class="hero__bg">
+    <img src="https://images.unsplash.com/photo-1550353127-b0da3aeaa0ca?w=1920&q=80" alt="Hero background">
+  </div>
+  <div class="hero__overlay"></div>
+  <h1 class="hero__title">Explore the Unknown</h1>
+  <p class="hero__subtitle">Scroll down to discover what lies beneath</p>
+  <div class="hero__scroll">
+    <span>Scroll</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="7 13 12 18 17 13"/>
+      <polyline points="7 6 12 11 17 6"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ── SCROLLABLE CONTENT ── -->
+<div class="content-spacer">
+
+  <!-- Bridge / intro -->
+  <div class="section-bridge">
+    <span class="section-bridge__label">Our Work</span>
+    <h2 class="section-bridge__heading">Four pillars that define everything we build</h2>
+    <p class="section-bridge__text">Hover each column to explore. Every detail is crafted with precision and purpose.</p>
+  </div>
+
+  <!-- Interactive Columns -->
+  <section class="columns" id="columns">
+
+    <!-- Column 1 -->
+    <div class="col active">
+      <div class="col__bg">
+        <img src="WhatsApp Image 2026-07-10 at 1.02.46 PM.jpeg" alt="Visual Identity">
+      </div>
+      <div class="col__overlay"></div>
+      <span class="col__number">1</span>
+      <div class="col__info">
+        <span class="col__tag">Design</span>
+        <h3 class="col__title">Visual Identity</h3>
+        <p class="col__desc">Crafting cohesive brand systems that resonate with your audience and stand the test of time.</p>
+      </div>
+    </div>
+
+    <!-- Column 2 -->
+    <div class="col">
+      <div class="col__bg">
+        <img src="Screenshot 2026-07-10 130131.png" alt="Modern Engineering">
+      </div>
+      <div class="col__overlay"></div>
+      <span class="col__number">2</span>
+      <div class="col__info">
+        <span class="col__tag">Development</span>
+        <h3 class="col__title">Modern Engineering</h3>
+        <p class="col__desc">Built with performance-first architecture, clean code, and seamless user experiences.</p>
+      </div>
+    </div>
+
+    <!-- Column 3 -->
+    <div class="col">
+      <div class="col__bg">
+        <img src="img-2.jpeg" alt="Growth Framework">
+      </div>
+      <div class="col__overlay"></div>
+      <span class="col__number">3</span>
+      <div class="col__info">
+        <span class="col__tag">Strategy</span>
+        <h3 class="col__title">Growth Framework</h3>
+        <p class="col__desc">Data-driven strategies that align business goals with meaningful customer outcomes.</p>
+      </div>
+    </div>
+
+    <!-- Column 4 -->
+    <div class="col">
+      <div class="col__bg">
+        <img src="Screenshot 2026-07-10 131303.png" alt="Future Thinking">
+      </div>
+      <div class="col__overlay"></div>
+      <span class="col__number">4</span>
+      <div class="col__info">
+        <span class="col__tag">Innovation</span>
+        <h3 class="col__title">Future Thinking</h3>
+        <p class="col__desc">Pushing boundaries with emerging technologies and forward-looking creative solutions.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2026 — Crafted for HARSH L@3D</p>
+  </footer>
+
+</div>
+
+<script>
+  // ── Parallax hero on scroll ──
+  const hero = document.getElementById('hero');
+  let ticking = false;
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        const vh = window.innerHeight;
+        const progress = Math.min(scrollY / vh, 1);
+
+        hero.style.transform =
+          `translate3d(0, ${scrollY * 0.3}px, 0) scale(${1 - progress * 0.15})`;
+        hero.style.opacity = 1 - progress * 1.2;
+
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // ── Column transition sounds ──
+  // Drop 4 files at these paths (or edit the paths below to match your own filenames).
+  // One sound per column: Column 1 -> index 0, Column 2 -> index 1, etc.
+  const sounds = [
+    new Audio("1-imp.mp3"),
+    new Audio("vine-boom.mp3"),
+    new Audio("3-imp.mp3"),
+    new Audio("4-imp.mp3")
+  ];
+
+  function playSound(index) {
+    const s = sounds[index];
+    if (!s) return;
+    s.pause();
+    s.currentTime = 0;
+    s.volume = 0.7;
+    s.play().catch(() => {}); // ignore autoplay-block errors before first user interaction
+  }
+
+  // ── Column hover interaction ──
+  const columns = document.querySelectorAll('.col');
+
+  columns.forEach((col, index) => {
+    col.addEventListener('mouseenter', () => {
+      columns.forEach(c => c.classList.remove('active'));
+      col.classList.add('active');
+      playSound(index);
+    });
+  });
+
+  // Touch support for mobile
+  columns.forEach((col, index) => {
+    col.addEventListener('touchstart', () => {
+      columns.forEach(c => c.classList.remove('active'));
+      col.classList.add('active');
+      playSound(index);
+    }, { passive: true });
+  });
+</script>
+
+</body>
+</html>
